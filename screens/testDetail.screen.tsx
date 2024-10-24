@@ -1,4 +1,7 @@
-import { useState } from "react";
+import Loader from "@/components/loader/Loader";
+import { fetchAllTests } from "@/services/test.api";
+import { Test } from "@/types/global.type";
+import { useEffect, useState } from "react";
 import { Button, Image, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -10,32 +13,60 @@ interface Question {
 
 export default function TestDetailScreen() {
 
-    const [questions, setQuestions] = useState<Question[]>([
-        { id: '1', type: 'listening_part1', content: 'This is a listening part 1 question' },
-        { id: '2', type: 'reading_part5', content: 'This is a reading part 5 question' },
-        { id: '3', type: 'listening_part2', content: 'This is a listening part 3 question' },
-    ]);
+  const [tests, setTests] = useState<Test[]>([]);
 
-    const renderQuestion = (question: Question) => {
-        switch (question.type) {
-          case 'listening_part1':
-            return <QuestionType1 key={question.id} question={question} />;
-          case 'listening_part2':
-            return <QuestionType2 key={question.id} question={question} />;
-          case 'reading_part5':
-            return <QuestionType3 key={question.id} question={question} />;
-          default:
-            return <Text key={question.id}>Unknown question type</Text>;
-        }
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const loadQuestions = async () => {
+      try {
+        setLoading(true)
+        const data = await fetchAllTests();
+        setTests(data);
+        console.log(data);
+      } catch (error) {
+        console.error('Failed to load questions:', error);
+      } finally {
+        setLoading(false)
+      }
     };
 
-    return (
-        <SafeAreaView className="flex-1">
-            <ScrollView className="p-4 bg-white">
-                {questions.map((question) => renderQuestion(question))}
-            </ScrollView>
-        </SafeAreaView>
-    )
+    loadQuestions();
+  }, []);
+
+  const [questions, setQuestions] = useState<Question[]>([
+      { id: '1', type: 'listening_part1', content: 'This is a listening part 1 question' },
+      { id: '2', type: 'reading_part5', content: 'This is a reading part 5 question' },
+      { id: '3', type: 'listening_part2', content: 'This is a listening part 3 question' },
+  ]);
+
+  const renderQuestion = (question: Question) => {
+      switch (question.type) {
+        case 'listening_part1':
+          return <QuestionType1 key={question.id} question={question} />;
+        case 'listening_part2':
+          return <QuestionType2 key={question.id} question={question} />;
+        case 'reading_part5':
+          return <QuestionType3 key={question.id} question={question} />;
+        default:
+          return <Text key={question.id}>Unknown question type</Text>;
+      }
+  };
+
+  if(loading) return (
+    <Loader />
+  )
+
+  return (
+      <SafeAreaView className="flex-1">
+          {tests.map((test, index) => (
+            <Text>{test.id}</Text>
+          ))}
+          <ScrollView className="p-4 bg-white">
+              {questions.map((question) => renderQuestion(question))}
+          </ScrollView>
+      </SafeAreaView>
+  )
 }
 
 export const QuestionType1 = ({ question } : { question : Question}) => (
