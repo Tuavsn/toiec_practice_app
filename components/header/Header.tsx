@@ -10,7 +10,7 @@ export default function Header() {
 
     const { user } = useAuth()
 
-    // console.log(user?.token)
+    console.log(user?.token)
 
     return (
         <View className="flex flex-row items-center justify-between p-3 bg-[#004B8D]">
